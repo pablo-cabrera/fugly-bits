@@ -1,0 +1,32 @@
+{
+    "author": "Pablo José Cabrera Muñoz <pablo.cabrera.munoz@gmail.com>",
+    "name": "fugly-bits",
+    "description": "fugly-js components",
+    "version": "0.0.1",
+    "homepage": "https://github.com/pablo-cabrera/fugly-bits",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/pablo-cabrera/fugly-bits.git"
+    },
+    "license": "MIT",
+    "main": "lib/fugly.js",
+    "dependencies": {
+        "fugly-js": "^0.0.5"
+    },
+    "devDependencies": {
+        "colors": "*",
+        "gabarito": "0.0.1",
+        "grunt": "~0.4.0",
+        "grunt-contrib-clean": "*",
+        "grunt-contrib-copy": "*",
+        "grunt-contrib-jshint": "*",
+        "grunt-contrib-uglify": "*",
+        "grunt-contrib-yuidoc": "~0.4.0",
+        "grunt-gabarito": "^0.0.5",
+        "grunt-jscs": "^3.0.1",
+        "parts": "0.0.2"
+    },
+    "scripts": {
+        "test": "grunt"
+    }
+}
