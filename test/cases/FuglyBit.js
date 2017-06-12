@@ -19,7 +19,7 @@
 
     clause(
     "render should use the resource as template, expose the api given by the" +
-    " \"fix\" callback and append the first encountered element as root node" +
+    " \"bits\" callback and append the first encountered element as root node" +
     " within the template into the passed context element",
     function () {
         var ts = new Date().getTime();
@@ -29,7 +29,7 @@
         var template =
             html +
             "<$ " +
-            "fix(function (root) {" +
+            "bits(function (root) {" +
             "   return {" +
             "       root: function () { return root; }, " +
             "       ts: function () { return " + ts + "; }" +
@@ -72,7 +72,7 @@
         var template =
             html +
             "<$ " +
-            "fix(function (root) {" +
+            "bits(function (root) {" +
             "   return {" +
             "       view: function () { return view; }" +
             "   };" +
@@ -106,7 +106,7 @@
 
         var template =
             html +
-            "<$ fix(function (root) { return {}; }); $>";
+            "<$ bits(function (root) { return {}; }); $>";
 
         var tmpDiv = {
             firstChild: { nodeType: Node.ELEMENT_NODE },
@@ -138,7 +138,7 @@
 
         var template =
             html +
-            "<$ fix(function (root) { return {}; }); $>";
+            "<$ bits(function (root) { return {}; }); $>";
 
         var tmpDiv = {
             firstChild: { nodeType: Node.ELEMENT_NODE },
@@ -159,6 +159,42 @@
         var appendCall = context.appendChild.verify();
 
         removeCall.before(appendCall);
+    }).
+
+    clause(
+    "if \"bits\" hasn't been called, render should ask for a resource with " +
+    "the same name suffixed with \".bits\" and use that resource as a " +
+    "function body",
+    function () {
+        var ts = new Date().getTime();
+        var html = "<div id=\"id\"></div>";
+        var bits = "return { ts: function () { return " + ts + "; } };";
+        var src = "src";
+
+        var tmpDiv = {
+            firstChild: { nodeType: Node.ELEMENT_NODE },
+            removeChild: parts.k
+        };
+
+        var ownerDocument = { createElement: parts.constant(tmpDiv) };
+        var resources = {
+            getResource: gabarito.spy(function (resource) {
+                switch (resource) {
+                    case src: return html;
+                    case src + ".bits": return bits;
+                }
+            })
+        };
+
+        var bit = new fugly.bits.FuglyBit(ownerDocument, resources, src);
+
+        var context = { appendChild: gabarito.spy() };
+        bit.render(context);
+
+        resources.getResource.verify().args(src);
+        resources.getResource.verify().args(src + ".bits");
+
+        assert.that(bit.api.ts()).sameAs(ts);
     });
 
 }());

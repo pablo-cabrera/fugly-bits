@@ -58,6 +58,7 @@ module.exports = function (grunt) {
                     plusplus: true,
                     quotmark: "double",
                     undef: true,
+                    evil: true,
 
                     /* environment */
                     browser: true,
