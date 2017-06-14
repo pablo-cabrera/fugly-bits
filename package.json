@@ -9,9 +9,9 @@
         "url": "git://github.com/pablo-cabrera/fugly-bits.git"
     },
     "license": "MIT",
-    "main": "lib/fugly.js",
+    "main": "lib/fugly-bits.js",
     "dependencies": {
-        "fugly-js": "^0.0.5"
+        "fugly-js": "^0.1.1"
     },
     "devDependencies": {
         "colors": "*",
