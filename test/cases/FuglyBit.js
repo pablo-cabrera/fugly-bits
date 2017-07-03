@@ -2,6 +2,8 @@
     "use strict";
 
     var assert = gabarito.assert;
+    var matcher = gabarito.matcher;
+    var sameAs = parts.sameAs;
 
     gabarito.test("fugly.bits.FuglyBit").
 
@@ -12,7 +14,7 @@
         };
 
         var src = "src";
-        new fugly.bits.FuglyBit({}, resources, src);
+        new fugly.bits.FuglyBit(resources, src);
 
         resources.getResource.verify().args(src);
     }).
@@ -50,10 +52,11 @@
         var src = "src";
 
         var context = {
+            ownerDocument: ownerDocument,
             appendChild: gabarito.spy()
         };
 
-        var bit = new fugly.bits.FuglyBit(ownerDocument, resources, src);
+        var bit = new fugly.bits.FuglyBit(resources, src);
         bit.render(context);
 
         ownerDocument.createElement.verify("div");
@@ -89,9 +92,13 @@
         var resources = { getResource: parts.constant(template) };
         var src = "src";
 
-        var bit = new fugly.bits.FuglyBit(ownerDocument, resources, src);
+        var bit = new fugly.bits.FuglyBit(resources, src);
 
-        var context = { appendChild: parts.k };
+        var context = {
+            ownerDocument: ownerDocument,
+            appendChild: parts.k
+        };
+
         var view = new Date().getTime();
 
         bit.render(context, view);
@@ -117,9 +124,10 @@
         var resources = { getResource: parts.constant(template) };
         var src = "src";
 
-        var bit = new fugly.bits.FuglyBit(ownerDocument, resources, src);
+        var bit = new fugly.bits.FuglyBit(resources, src);
 
         var context = {
+            ownerDocument: ownerDocument,
             appendChild: parts.k,
             removeChild: gabarito.spy()
         };
@@ -149,10 +157,14 @@
         var resources = { getResource: parts.constant(template) };
         var src = "src";
 
-        var bit = new fugly.bits.FuglyBit(ownerDocument, resources, src);
+        var bit = new fugly.bits.FuglyBit(resources, src);
         bit.remove = gabarito.spy();
 
-        var context = { appendChild: gabarito.spy() };
+        var context = {
+            ownerDocument: ownerDocument,
+            appendChild: gabarito.spy()
+        };
+
         bit.render(context);
 
         var removeCall = bit.remove.verify();
@@ -186,15 +198,101 @@
             })
         };
 
-        var bit = new fugly.bits.FuglyBit(ownerDocument, resources, src);
+        var bit = new fugly.bits.FuglyBit(resources, src);
 
-        var context = { appendChild: gabarito.spy() };
+        var context = {
+            ownerDocument: ownerDocument,
+            appendChild: gabarito.spy()
+        };
+
         bit.render(context);
 
         resources.getResource.verify().args(src);
         resources.getResource.verify().args(src + ".bits");
 
         assert.that(bit.api.ts()).sameAs(ts);
+    }).
+
+    clause(
+    "bits.inline should yield a bits within the parent bits current position " +
+    "within the actual template",
+    function () {
+        var template =
+            "<div id=\"id\">" +
+                "<$= bits.inline(" +
+                    "new fugly.bits.FuglyBit(view, \"inline\")) $>" +
+            "</div>" +
+            "<$ bits(function (r) { return {}; }); $>";
+
+        var inlineTemplate =
+            "<div id=\"inline-id\"></div>" +
+            "<$ bits(function (r) { return {}; }); $>";
+
+        var ownerDocument = {
+            createElement: gabarito.spy(function () {
+                return {
+                    firstChild: { nodeType: Node.ELEMENT_NODE },
+                    removeChild: parts.k
+                };
+            }),
+            getElementById: gabarito.spy(function () {
+                return { parentNode: { replaceChild: gabarito.spy() } };
+            })
+
+        };
+
+        var resources = {
+            getResource: gabarito.spy(function (resource) {
+                switch (resource) {
+                    case "src": return template;
+                    case "inline": return inlineTemplate;
+                }
+            })
+        };
+
+        var context = {
+            ownerDocument: ownerDocument,
+            appendChild: parts.k
+        };
+
+        var bit = new fugly.bits.FuglyBit(resources, "src");
+        bit.render(context, resources);
+
+        resources.getResource.verify().args("src");
+        resources.getResource.verify().args("inline");
+
+        var byIdArgumentGrabber = matcher.grabber();
+        var byIdReturnGrabber = matcher.grabber();
+        ownerDocument.getElementById.verify().
+            args(byIdArgumentGrabber).
+            returning(byIdReturnGrabber);
+
+        var tempId = byIdArgumentGrabber.grab();
+        var byIdElement = byIdReturnGrabber.grab();
+
+        var parentTempDivGrabber = matcher.grabber();
+        ownerDocument.createElement.verify().returning(parentTempDivGrabber);
+        var parentTempDiv = parentTempDivGrabber.grab();
+
+        var expectedHtml =
+            "<div id=\"id\">" +
+                "<div id=\"" + tempId + "\"></div>" +
+            "</div>";
+
+        assert.that(parentTempDiv.innerHTML).sameAs(expectedHtml);
+
+        var inlineTempDivGrabber = matcher.grabber();
+        ownerDocument.createElement.verify().returning(inlineTempDivGrabber);
+        var inlineTempDiv = inlineTempDivGrabber.grab();
+
+        assert.that(inlineTempDiv.innerHTML).
+                sameAs("<div id=\"inline-id\"></div>");
+
+        byIdElement.parentNode.replaceChild.verify().
+            args(
+                matcher(sameAs(inlineTempDiv.firstChild)),
+                matcher(sameAs(byIdElement)));
+
     });
 
 }());

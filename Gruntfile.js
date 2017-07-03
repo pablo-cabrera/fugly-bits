@@ -20,8 +20,9 @@ module.exports = function (grunt) {
 
         gabarito: {
             src: [
-                "node_modules/fugly-js/lib/fugly.js",
-                "node_modules/parts/lib/parts.js",
+                require.resolve("fugly-js"),
+                require.resolve("parts"),
+                require.resolve("ilk"),
                 "lib/fugly-bits.js",
                 "test/cases/**/*.js"
             ],
@@ -64,7 +65,9 @@ module.exports = function (grunt) {
                     browser: true,
 
                     globals: {
-                        fugly: false
+                        fugly: false,
+                        ilk: false,
+                        parts: false
                     }
                 },
 

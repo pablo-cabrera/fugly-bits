@@ -11,7 +11,9 @@
     "license": "MIT",
     "main": "lib/fugly-bits.js",
     "dependencies": {
-        "fugly-js": "^0.1.1"
+        "fugly-js": "^0.1.1",
+        "ilk": "^0.3.1",
+        "parts": "0.0.2"
     },
     "devDependencies": {
         "colors": "*",
@@ -23,8 +25,7 @@
         "grunt-contrib-uglify": "*",
         "grunt-contrib-yuidoc": "~0.4.0",
         "grunt-gabarito": "^0.0.5",
-        "grunt-jscs": "^3.0.1",
-        "parts": "0.0.2"
+        "grunt-jscs": "^3.0.1"
     },
     "scripts": {
         "test": "grunt"
